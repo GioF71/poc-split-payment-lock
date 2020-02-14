@@ -1,7 +1,8 @@
 package eu.sia.poc.rest.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import eu.sia.poc.rest.PaymentService;
 import eu.sia.poc.rest.body.PaymentBody;
+import eu.sia.poc.rest.dto.PaymentResultDto;
+import eu.sia.poc.rest.dto.PaymentStatus;
 import eu.sia.poc.service.cache.AccountCache;
 import eu.sia.poc.service.cache.BalanceSlotCache;
 import eu.sia.poc.service.structure.Account;
@@ -24,48 +27,102 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Autowired
 	private BalanceSlotCache balanceSlotCache;
+	
+	private final ValidationStep validationStepArray[] = new ValidationStep[] {
+		ValidationStep.create(notEmpty(PaymentBody::getPayerAccountId),	() -> PaymentStatus.UNSPECIFIED_PAYER_ACCOUNT),
+		ValidationStep.create(notEmpty(PaymentBody::getPayeeAccountId),	() -> PaymentStatus.UNSPECIFIED_PAYEE_ACCOUNT),
+		ValidationStep.create(validAmount(), () -> PaymentStatus.INVALID_AMOUNT),
+		ValidationStep.create(loadAccount(PaymentBody::getPayerAccountId, PaymentServiceContext::setPayerAccount), () -> PaymentStatus.PAYER_ACCOUNT_NOT_FOUND),
+		ValidationStep.create(loadAccount(PaymentBody::getPayeeAccountId, PaymentServiceContext::setPayeeAccount), () -> PaymentStatus.PAYEE_ACCOUNT_NOT_FOUND)
+	};
+	
+	private void executeValidation(PaymentServiceContext context) {
+		int i = 0;
+		while (context.isValidationSuccessful() && i < validationStepArray.length) {
+			executeValidationStep(context, validationStepArray[i++]);
+		}
+	}
+	
+	private void executeValidationStep(
+			PaymentServiceContext context, 
+			ValidationStep validationStep) {
+		Boolean validatorResult = validationStep.getValidator().apply(context);
+		boolean validatorSuccessful = Boolean.TRUE.equals(validatorResult);
+		context.setValidationSuccessful(validatorSuccessful);
+		if (!validatorSuccessful) {
+			context.setPaymentStatus(validationStep.getWhenValidatorFails().get());
+		}
+	}
+	
+	private Function<PaymentServiceContext, Boolean> notEmpty(Function<PaymentBody, String> stringExtractor) {
+		return ctx -> Optional.ofNullable(stringExtractor.apply(ctx.getPaymentBody()))
+			.map(acc -> acc.length() > 0)
+			.orElse(false);
+	}
+	
+	private Function<PaymentServiceContext, Boolean> loadAccount(
+			Function<PaymentBody, String> accountIdExtractor,
+			BiConsumer<PaymentServiceContext, Account> accountConsumer) {
+		return new Function<PaymentServiceContext, Boolean>() {
 
+			@Override
+			public Boolean apply(PaymentServiceContext context) {
+				Account account = accountCache.get(accountIdExtractor.apply(context.getPaymentBody()));
+				if (account != null) {
+					accountConsumer.accept(context, account);
+				}
+				return account != null;
+			}
+		};
+	}
+	
+	private Function<PaymentServiceContext, Boolean> validAmount() {
+		return ctx -> Optional.ofNullable(ctx.getPaymentBody())
+			.map(b -> b.getAmount()) 
+			.map(am -> am.floatValue() > 0.0f)
+			.orElse(false);
+	}
+	
+	private PaymentResultDto toResultDto(PaymentServiceContext context) {
+		return new PaymentResultDto(
+			context.getPaymentStatus(), 
+			context.getPaymentBody().getPayerAccountId(), 
+			context.getPaymentBody().getPayeeAccountId(), 
+			context.getPaymentBody().getAmount());
+	}
+	
 	@Override
 	@PostMapping(value = "payment/pay")
-	public boolean pay(@RequestBody PaymentBody payment) {
-		boolean result = false;
-		Account payerAccount = accountCache.get(payment.getPayerAccountId());
-		Account payeeAccount = accountCache.get(payment.getPayeeAccountId());
-		List<BalanceSlotKey> lockList = new ArrayList<>();
-		List<BalanceSlot> slotList = new ArrayList<>();
-		Double lockedAvailableAmount = Double.valueOf(0.0f);
-		if (payerAccount != null && payeeAccount != null) {
-			// try lock payer slot(s)
-			lockedAvailableAmount = lockPayerSlots(
-				payment, 
-				payerAccount, 
-				lockList, 
-				slotList);
+	public PaymentResultDto pay(@RequestBody PaymentBody paymentBody) {
+		PaymentServiceContext context = new PaymentServiceContext(paymentBody);
+		executeValidation(context);
+		if (context.isValidationSuccessful()) {
+			// go on!
+			Double lockedAvailableAmount = Double.valueOf(0.0f);
+			lockedAvailableAmount = lockPayerSlots(context);
+			if (lockedAvailableAmount >= paymentBody.getAmount()) {
+				moveFunds(context);
+				wait(paymentBody);
+				context.setPaymentStatus(PaymentStatus.OK);
+			} else {
+				context.setPaymentStatus(PaymentStatus.NOT_ENOUGH_FUNDS);
+			}
+			// anyway, do the account unlock...
+			context.getLockList().forEach(x -> balanceSlotCache.unlock(x));
 		}
-		if (lockedAvailableAmount >= payment.getAmount()) {
-			moveFunds(payment, slotList, lockList);
-			wait(payment);
-			result = true;
-		}
-		// any way do the unlock
-		lockList.forEach(x -> balanceSlotCache.unlock(x));
-		return result;
+		return toResultDto(context);
 	}
 
-	private void moveFunds(
-			PaymentBody payment, 
-			List<BalanceSlot> slotList,
-			List<BalanceSlotKey> lockList) {
+	private void moveFunds(PaymentServiceContext context) {
 		// can proceed with payment
 		// first, identify slot in payee
-		BalanceSlotKey payeeSlotKey = BalanceSlotKey.valueOf(payment.getPayeeAccountId(), 1);
+		BalanceSlotKey payeeSlotKey = BalanceSlotKey.valueOf(context.getPayeeAccount().getId(), 1);
 		BalanceSlot payeeSlot = balanceSlotCache.get(payeeSlotKey);
-		// lockit (should find the first that can be locked
-		// or create a new one
+		// lockit (TODO: should find the first that can be locked or create a new one)
 		if (payeeSlot != null && balanceSlotCache.tryLock(payeeSlotKey)) {
-			lockList.add(payeeSlotKey);
-			Double amountToBeRemoved = payment.getAmount();
-			for (BalanceSlot slot : slotList) {
+			context.addToLockList(payeeSlotKey);
+			Double amountToBeRemoved = context.getPaymentBody().getAmount();
+			for (BalanceSlot slot : context.getSlotList()) {
 				if (slot.getAvailableBalance() <= amountToBeRemoved) {
 					// totally remove
 					Double slotBalance = slot.getAvailableBalance();
@@ -78,31 +135,30 @@ public class PaymentServiceImpl implements PaymentService {
 				}
 			}
 			// give balance to payee
-			payeeSlot.setAvailableBalance(payeeSlot.getAvailableBalance() + payment.getAmount());
+			payeeSlot.setAvailableBalance(payeeSlot.getAvailableBalance() + context.getPaymentBody().getAmount());
 		}
 	}
 
-	private Double lockPayerSlots(
-			PaymentBody payment, 
-			Account payerAccount, 
-			List<BalanceSlotKey> lockList,
-			List<BalanceSlot> slotList) {
+	private Double lockPayerSlots(PaymentServiceContext context) {
 		Double lockedAvailableAmount = Double.valueOf(0.0f);
 		int i = 1;
 		BalanceSlot slot = null;
 		do {
-			BalanceSlotKey key = BalanceSlotKey.valueOf(payerAccount.getId(), i);
+			BalanceSlotKey key = BalanceSlotKey.valueOf(context.getPaymentBody().getPayerAccountId(), i);
 			slot = balanceSlotCache.get(key);
 			if (slot != null) {
 				// try to lock
 				if (balanceSlotCache.tryLock(key)) {
-					lockList.add(key);
+					context.addToLockList(key);
 					lockedAvailableAmount += slot.getAvailableBalance();
-					slotList.add(slot);
+					context.addToSlotList(slot);
 				}
 			}
 			++i;
-		} while (lockedAvailableAmount < payment.getAmount() && slot != null && i < Integer.MAX_VALUE);
+		} while (
+			lockedAvailableAmount < context.getPaymentBody().getAmount() && 
+			slot != null && 
+			i < Integer.MAX_VALUE);
 		return lockedAvailableAmount;
 	}
 

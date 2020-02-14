@@ -1,5 +1,8 @@
 package eu.sia.poc.rest.dto;
 
+import lombok.Getter;
+
+@Getter
 public class AddAccountDto {
 
 	private final AddResult addResult;
@@ -8,13 +11,5 @@ public class AddAccountDto {
 	public AddAccountDto(AddResult addResult, AccountDto accountDto) {
 		this.addResult = addResult;
 		this.accountDto = accountDto;
-	}
-
-	public AddResult getAddResult() {
-		return addResult;
-	}
-
-	public AccountDto getAccountDto() {
-		return accountDto;
 	}
 }

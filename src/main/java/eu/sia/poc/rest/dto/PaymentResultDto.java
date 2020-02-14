@@ -1,41 +1,23 @@
 package eu.sia.poc.rest.dto;
 
+import lombok.Getter;
+
+@Getter
 public class PaymentResultDto {
 	
-	private PaymentStatus paymentStatus;
-	private String payerAccountId;
-	private String payeeAccountId;
-	private Double amount;
+	private final PaymentStatus paymentStatus;
+	private final String payerAccountId;
+	private final String payeeAccountId;
+	private final Double amount;
 
-	public PaymentStatus getPaymentStatus() {
-		return paymentStatus;
-	}
-
-	public void setPaymentStatus(PaymentStatus paymentStatus) {
+	public PaymentResultDto(
+			PaymentStatus paymentStatus, 
+			String payerAccountId, 
+			String payeeAccountId, 
+			Double amount) {
 		this.paymentStatus = paymentStatus;
-	}
-
-	public String getPayerAccountId() {
-		return payerAccountId;
-	}
-
-	public void setPayerAccountId(String payerAccountId) {
 		this.payerAccountId = payerAccountId;
-	}
-
-	public String getPayeeAccountId() {
-		return payeeAccountId;
-	}
-
-	public void setPayeeAccountId(String payeeAccountId) {
 		this.payeeAccountId = payeeAccountId;
-	}
-
-	public Double getAmount() {
-		return amount;
-	}
-
-	public void setAmount(Double amount) {
 		this.amount = amount;
 	}
 }

@@ -1,7 +1,8 @@
 package eu.sia.poc.rest;
 
 import eu.sia.poc.rest.body.PaymentBody;
+import eu.sia.poc.rest.dto.PaymentResultDto;
 
 public interface PaymentService {
-	boolean pay(PaymentBody payment);
+	PaymentResultDto pay(PaymentBody payment);
 }
