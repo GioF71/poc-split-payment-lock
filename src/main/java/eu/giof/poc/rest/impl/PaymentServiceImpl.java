@@ -91,9 +91,14 @@ public class PaymentServiceImpl implements PaymentService {
 			context.getPaymentBody().getAmount());
 	}
 	
+	private void threadLog(String logString) {
+		System.out.println(String.format("Thread [%d] %s", Thread.currentThread().getId(), logString));
+	}
+	
 	@Override
 	@PostMapping(value = "payment/pay")
 	public PaymentResultDto pay(@RequestBody PaymentBody paymentBody) {
+		threadLog("Payment started");
 		PaymentServiceContext context = new PaymentServiceContext(paymentBody);
 		executeValidation(context);
 		if (context.isValidationSuccessful()) {
@@ -101,6 +106,7 @@ public class PaymentServiceImpl implements PaymentService {
 			Double lockedAvailableAmount = Double.valueOf(0.0f);
 			lockedAvailableAmount = lockPayerSlots(context);
 			if (lockedAvailableAmount >= paymentBody.getAmount()) {
+				threadLog("Moving funds");
 				moveFunds(context);
 				wait(paymentBody);
 				context.setPaymentStatus(PaymentStatus.OK);
@@ -115,12 +121,14 @@ public class PaymentServiceImpl implements PaymentService {
 
 	private void moveFunds(PaymentServiceContext context) {
 		// can proceed with payment
-		// first, identify slot in payee
-		BalanceSlotKey payeeSlotKey = BalanceSlotKey.valueOf(context.getPayeeAccount().getId(), 1);
-		BalanceSlot payeeSlot = balanceSlotCache.get(payeeSlotKey);
-		// lockit (TODO: should find the first that can be locked or create a new one)
-		if (payeeSlot != null && balanceSlotCache.tryLock(payeeSlotKey)) {
-			context.addToLockList(payeeSlotKey);
+		// first, identify next slot in payee
+		int lastPayeeSlotId = balanceSlotCache.getLastSlotKey(context.getPayeeAccount().getId());
+		BalanceSlotKey payeeSlotKey = BalanceSlotKey.valueOf(context.getPayeeAccount().getId(), lastPayeeSlotId + 1);
+		BalanceSlot payeeSlot = new BalanceSlot(Double.valueOf(0.0f));
+		balanceSlotCache.put(payeeSlotKey, payeeSlot);
+		// TODO define method to put a new item an lock it in one operation
+		balanceSlotCache.tryLock(payeeSlotKey);
+		context.addToLockList(payeeSlotKey);
 			Double amountToBeRemoved = context.getPaymentBody().getAmount();
 			for (BalanceSlot slot : context.getSlotList()) {
 				if (slot.getAvailableBalance() <= amountToBeRemoved) {
@@ -136,7 +144,7 @@ public class PaymentServiceImpl implements PaymentService {
 			}
 			// give balance to payee
 			payeeSlot.setAvailableBalance(payeeSlot.getAvailableBalance() + context.getPaymentBody().getAmount());
-		}
+		//}
 	}
 
 	private Double lockPayerSlots(PaymentServiceContext context) {
@@ -147,11 +155,21 @@ public class PaymentServiceImpl implements PaymentService {
 			BalanceSlotKey key = BalanceSlotKey.valueOf(context.getPaymentBody().getPayerAccountId(), i);
 			slot = balanceSlotCache.get(key);
 			if (slot != null) {
-				// try to lock
 				if (balanceSlotCache.tryLock(key)) {
-					context.addToLockList(key);
-					lockedAvailableAmount += slot.getAvailableBalance();
-					context.addToSlotList(slot);
+					threadLog(String.format("Locked %s %s Id [%s] Slot [%d]",
+						BalanceSlot.class.getSimpleName(),
+						Account.class.getSimpleName(),
+						key.getAccountId(),
+						key.getSlotId()));
+					if (slot.getAvailableBalance() > 0.0f) {
+						// add to lock list
+						context.addToLockList(key);
+						// accumulate amount
+						lockedAvailableAmount += slot.getAvailableBalance();
+						context.addToSlotList(slot);
+					} else {
+						balanceSlotCache.unlock(key);
+					}
 				}
 			}
 			++i;
@@ -174,3 +192,4 @@ public class PaymentServiceImpl implements PaymentService {
 		}
 	}
 }
+ 

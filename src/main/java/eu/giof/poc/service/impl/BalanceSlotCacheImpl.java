@@ -22,6 +22,8 @@ public class BalanceSlotCacheImpl
 			if (nextSlot != null) {
 				result = i;
 				currentSlot = nextSlot;
+			} else {
+				currentSlot = null;
 			}
 		}
 		return result;
