@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 import eu.giof.poc.rest.AccountService;
 import eu.giof.poc.rest.body.AddAccount;
 import eu.giof.poc.rest.dto.AccountDto;
+import eu.giof.poc.rest.dto.AccountSlotListDto;
 import eu.giof.poc.rest.dto.AddAccountDto;
 import eu.giof.poc.rest.dto.AddResult;
+import eu.giof.poc.rest.dto.BalanceSlotDto;
 import eu.giof.poc.service.CacheManagerWrapper;
 import eu.giof.poc.service.Configuration;
 import eu.giof.poc.service.cache.AccountCache;
@@ -47,6 +49,22 @@ public class AccountServiceImpl implements AccountService {
 			currentSlot = balanceSlotCache.get(BalanceSlotKey.valueOf(accountId, currentSlotId));
 		}		
 		return balance;
+	}
+
+	@Override
+	@GetMapping(value = "/account/slotlist/{accountId}")
+	public AccountSlotListDto getSlotList(@PathVariable String accountId) {
+		AccountSlotListDto dto = new AccountSlotListDto(accountId);
+		Integer currentSlotId = 1;
+		BalanceSlot currentSlot = balanceSlotCache.get(BalanceSlotKey.valueOf(accountId, 1));
+		while (currentSlotId < Integer.MAX_VALUE && currentSlot != null) {
+			currentSlot = balanceSlotCache.get(BalanceSlotKey.valueOf(accountId, currentSlotId));
+			if (currentSlot != null) {
+				dto.add(BalanceSlotDto.valueOf(currentSlotId, currentSlot.getAvailableBalance()));
+			}
+			++currentSlotId;
+		}		
+		return dto;
 	}
 
 	@Override

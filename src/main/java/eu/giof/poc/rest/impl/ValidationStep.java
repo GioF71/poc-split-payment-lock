@@ -4,9 +4,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import eu.giof.poc.rest.dto.PaymentStatus;
-import io.reactivex.annotations.NonNull;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)

@@ -11,7 +11,6 @@ public class PaymentBody {
 
 	@Getter
 	@Setter
-	
 	private String payeeAccountId;
 	
 	@Getter
