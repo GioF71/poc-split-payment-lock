@@ -1,7 +1,10 @@
-package eu.giof.poc.service.datatype;
+package eu.giof.poc.util.datatype;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import eu.giof.poc.util.datatype.AbsComparableWrapper;
+import eu.giof.poc.util.datatype.AbsStringComparableWrapper;
 
 public class ComparableWrapperTest {
 	

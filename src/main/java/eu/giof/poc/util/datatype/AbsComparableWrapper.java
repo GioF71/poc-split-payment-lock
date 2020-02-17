@@ -1,4 +1,4 @@
-package eu.giof.poc.service.datatype;
+package eu.giof.poc.util.datatype;
 
 import java.util.Optional;
 

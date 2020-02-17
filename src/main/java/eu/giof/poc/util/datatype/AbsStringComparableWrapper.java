@@ -1,4 +1,4 @@
-package eu.giof.poc.service.datatype;
+package eu.giof.poc.util.datatype;
 
 public abstract class AbsStringComparableWrapper<X extends AbsStringComparableWrapper<X>>  
 	extends AbsComparableWrapper<String, X> {
