@@ -281,35 +281,6 @@ public class PaymentServiceImpl implements PaymentService {
 		}
 		return toResultDto(context);
 	}
-	
-//	private BalanceSlot getPayeeSlot(PaymentServiceContext context) {
-//		BalanceSlot payeeSlot = null;
-//		while (payeeSlot == null) {
-//			int slotId = 1;
-//			BalanceSlot currentSlot = null;
-//			boolean lastFound = false;
-//			boolean unlockedFound = false;
-//			do {
-//				BalanceSlotKey currentKey = BalanceSlotKey.valueOf(context.getPayeeAccount().getId(), slotId);
-//				currentSlot = balanceSlotCache.get(currentKey);
-//				if (currentSlot != null) {
-//					// try lock...
-//					if (balanceSlotCache.tryLock(currentKey)) {
-//						logLockBalanceSlotKey(currentKey);						
-//						payeeSlot = currentSlot;
-//						context.setPayeeSlot(currentSlot);
-//						unlockedFound = true;
-//						context.addToLockList(currentKey);
-//					} else {
-//						++slotId;
-//					}
-//				} else {
-//					lastFound = true;
-//				}
-//			} while (!unlockedFound && !lastFound);
-//		}
-//		return payeeSlot;
-//	}
 
 	private void moveFunds(PaymentServiceContext context) {
 		BalanceSlot payeeSlot = context.getPayeeSlot();
@@ -343,13 +314,7 @@ public class PaymentServiceImpl implements PaymentService {
 			BalanceSlotKey key = BalanceSlotKey.valueOf(payerAccountId, i);
 			slot = balanceSlotCache.get(key);
 			if (slot != null) {
-//				if (balanceSlotCache.tryLock(key)) {
 				if (lockFunction.apply(key)) {
-//					threadLog(String.format("Locked %s %s Id [%s] Slot [%d]",
-//						BalanceSlot.class.getSimpleName(),
-//						Account.class.getSimpleName(),
-//						key.getAccountId(),
-//						key.getSlotId()));
 					if (slot.getAvailableBalance() > 0.0f) {
 						// accumulate amount
 						lockedAvailableAmount += slot.getAvailableBalance();
@@ -368,36 +333,6 @@ public class PaymentServiceImpl implements PaymentService {
 		boolean success = lockedAvailableAmount >= amountToBeLocked;
 		return LockActorSlotResult.valueOf(success, actorSlotList);
 	}
-
-	
-//	private Double lockPayerSlots(PaymentServiceContext context) {
-//		Double lockedAvailableAmount = Double.valueOf(0.0f);
-//		int i = 1;
-//		BalanceSlot slot = null;
-//		do {
-//			BalanceSlotKey key = BalanceSlotKey.valueOf(context.getPaymentBody().getPayerAccountId(), i);
-//			slot = balanceSlotCache.get(key);
-//			if (slot != null) {
-//				if (balanceSlotCache.tryLock(key)) {
-//					logLockBalanceSlotKey(key);
-//					if (slot.getAvailableBalance() > 0.0f) {
-//						// add to lock list
-//						context.addToLockList(key);
-//						// accumulate amount
-//						lockedAvailableAmount += slot.getAvailableBalance();
-//						context.addToSlotList(slot);
-//					} else {
-//						balanceSlotCache.unlock(key);
-//					}
-//				}
-//			}
-//			++i;
-//		} while (
-//			lockedAvailableAmount < context.getPaymentBody().getAmount() && 
-//			slot != null && 
-//			i < Integer.MAX_VALUE);
-//		return lockedAvailableAmount;
-//	}
 
 	private void doWait(Integer waitSec) {
 		// sleep if requested
