@@ -125,7 +125,7 @@ public class PaymentServiceImpl implements PaymentService {
 	}
 	
 	private PaymentResultDto toResultDto(PaymentServiceContext context) {
-		return new PaymentResultDto(
+		return PaymentResultDto.valueOf(
 			context.getPaymentStatus(), 
 			context.getPaymentBody().getPayerAccountId(), 
 			context.getPaymentBody().getPayeeAccountId(), 

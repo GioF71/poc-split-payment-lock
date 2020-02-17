@@ -1,23 +1,27 @@
 package eu.giof.poc.rest.dto;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class PaymentResultDto {
 	
 	private final PaymentStatus paymentStatus;
 	private final String payerAccountId;
 	private final String payeeAccountId;
 	private final Double amount;
-
-	public PaymentResultDto(
+	
+	public static PaymentResultDto valueOf(
 			PaymentStatus paymentStatus, 
 			String payerAccountId, 
 			String payeeAccountId, 
 			Double amount) {
-		this.paymentStatus = paymentStatus;
-		this.payerAccountId = payerAccountId;
-		this.payeeAccountId = payeeAccountId;
-		this.amount = amount;
+		return new PaymentResultDto(
+			paymentStatus, 
+			payerAccountId, 
+			payeeAccountId, 
+			amount);
 	}
 }

@@ -54,7 +54,7 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@GetMapping(value = "/account/slotlist/{accountId}")
 	public AccountSlotListDto getSlotList(@PathVariable String accountId) {
-		AccountSlotListDto dto = new AccountSlotListDto(accountId);
+		AccountSlotListDto dto = AccountSlotListDto.create(accountId);
 		Integer currentSlotId = 1;
 		BalanceSlot currentSlot = balanceSlotCache.get(BalanceSlotKey.valueOf(accountId, 1));
 		while (currentSlotId < Integer.MAX_VALUE && currentSlot != null) {
@@ -99,9 +99,9 @@ public class AccountServiceImpl implements AccountService {
 		BalanceSlotCache balanceSlotCache = cacheManagerWrapper.getBalanceSlotCache();
 		Account existing = accountCache.get(id);
 		if (existing != null) {
-			return new AddAccountDto(
+			return AddAccountDto.valueOf(
 				AddResult.ALREADY_EXISTS, 
-				new AccountDto(existing.getId(), existing.getName()));
+				AccountDto.valueOf(existing.getId(), existing.getName()));
 		} else {
 			Account newAccount = new Account(id, name);
 			accountCache.put(id, newAccount);
@@ -109,12 +109,12 @@ public class AccountServiceImpl implements AccountService {
 			Double accountBalance = getBalance(addAccount);
 			for (int slotIndex = 0; slotIndex < slotCount; ++slotIndex) {
 				BalanceSlotKey currentSlotKey = BalanceSlotKey.valueOf(id, slotIndex + 1);
-				BalanceSlot currentSlot = new BalanceSlot(accountBalance / slotCount);
+				BalanceSlot currentSlot = BalanceSlot.valueOf(accountBalance / slotCount);
 				balanceSlotCache.put(currentSlotKey, currentSlot);
 			}
-			return new AddAccountDto(
+			return AddAccountDto.valueOf(
 				AddResult.ADD_OK, 
-				new AccountDto(id, name));
+				AccountDto.valueOf(id, name));
 		}
 	}
 }

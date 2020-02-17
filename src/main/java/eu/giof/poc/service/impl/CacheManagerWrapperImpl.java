@@ -27,9 +27,9 @@ public class CacheManagerWrapperImpl implements CacheManagerWrapper {
 	@PostConstruct
 	private void postConstruct() throws InterruptedException, ExecutionException {
 		System.out.println(String.format("%s %s", getClass().getSimpleName(), PostConstruct.class.getSimpleName()));
-		balanceSlotCache.put(BalanceSlotKey.valueOf("1", 1), new BalanceSlot(Double.valueOf(10.0f)));
-		balanceSlotCache.put(BalanceSlotKey.valueOf("1", 2), new BalanceSlot(Double.valueOf(10.0f)));
-		balanceSlotCache.put(BalanceSlotKey.valueOf("1", 3), new BalanceSlot(Double.valueOf(10.0f)));
+		balanceSlotCache.put(BalanceSlotKey.valueOf("1", 1), BalanceSlot.valueOf(Double.valueOf(10.0f)));
+		balanceSlotCache.put(BalanceSlotKey.valueOf("1", 2), BalanceSlot.valueOf(Double.valueOf(10.0f)));
+		balanceSlotCache.put(BalanceSlotKey.valueOf("1", 3), BalanceSlot.valueOf(Double.valueOf(10.0f)));
 		int sz = balanceSlotCache.size();
 		System.out.println(sz);
 	}
@@ -38,13 +38,6 @@ public class CacheManagerWrapperImpl implements CacheManagerWrapper {
 	public AccountCache getAccountCache() {
 		return accountCache;
 	}
-
-
-
-//	@Override
-//	public Cache<String, Payment> getPaymentCache() {
-//		return paymentCache;
-//	}
 
 	@Override
 	public BalanceSlotCache getBalanceSlotCache() {
@@ -62,7 +55,8 @@ public class CacheManagerWrapperImpl implements CacheManagerWrapper {
 			LOGGER.error(e.getMessage());
 		}
 	} 
-@Override
+	
+	@Override
 	public void lockKey(String cacheName, Object key) throws Exception {
 		if (!cacheManager.getCache(cacheName).getAdvancedCache().lock(key)) {
 			LOGGER.error("Fail to lock key [" + key + "] on " + cacheName);
