@@ -1,5 +1,7 @@
 package eu.giof.poc.service.datatype;
 
+import eu.giof.poc.util.impl.WrapperComparatorProvider;
+
 public class AccountId implements Comparable<AccountId> {
 
 	private final String value;
@@ -14,6 +16,10 @@ public class AccountId implements Comparable<AccountId> {
 
 	@Override
 	public int compareTo(AccountId o) {
-		return value.compareTo(o.value);
+		return WrapperComparatorProvider.comparator(AccountId::get).compare(this, o);
+	}
+
+	public String get() {
+		return value;
 	}
 }
