@@ -15,9 +15,9 @@ public class AddAccount {
 
 	@Getter
 	@Setter
-	private Double balance = Double.valueOf(0.0f);
+	private Double balance;
 
 	@Getter
 	@Setter
-	private Integer slotCount = null;
+	private Integer slotCount;
 }

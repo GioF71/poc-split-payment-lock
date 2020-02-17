@@ -55,6 +55,12 @@ public class AccountServiceImpl implements AccountService {
 		return cacheManagerWrapper.getAccountCache().size();
 	}
 	
+	private Double getBalance(AddAccount addAccount) {
+		return Optional.ofNullable(addAccount.getBalance())
+			.orElse(Double.valueOf(0.0f));
+	}
+
+	
 	private int getSlotCount(AddAccount addAccount) {
 		int slotCount = Optional.ofNullable(addAccount.getSlotCount())
 			.orElse(configuration.getDefaultSlotCount());
@@ -82,9 +88,10 @@ public class AccountServiceImpl implements AccountService {
 			Account newAccount = new Account(id, name);
 			accountCache.put(id, newAccount);
 			int slotCount = getSlotCount(addAccount);
+			Double accountBalance = getBalance(addAccount);
 			for (int slotIndex = 0; slotIndex < slotCount; ++slotIndex) {
 				BalanceSlotKey currentSlotKey = BalanceSlotKey.valueOf(id, slotIndex + 1);
-				BalanceSlot currentSlot = new BalanceSlot(addAccount.getBalance() / slotCount);
+				BalanceSlot currentSlot = new BalanceSlot(accountBalance / slotCount);
 				balanceSlotCache.put(currentSlotKey, currentSlot);
 			}
 			return new AddAccountDto(
