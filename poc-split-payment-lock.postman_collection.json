@@ -1,0 +1,442 @@
+{
+	"info": {
+		"_postman_id": "2b5fb19f-ec92-4d1a-9c0c-6185ba17064b",
+		"name": "dg-poc-001",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "addAccount (acc02) (100)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"id\":\"acc02\",\"name\":\"name-acc-02\",\"balance\":\"100\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "addAccount (acc03) (100)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"id\":\"acc03\",\"name\":\"name-acc-03\",\"balance\":\"100\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "addAccount (acc04) (0)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"id\":\"acc04\",\"name\":\"name-acc-04\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "count",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"id\":\"acc01\",\"name\":\"name-acc-01\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBalance (acc02)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/balance/acc02",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"balance",
+						"acc02"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBalance (acc03)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/balance/acc03",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"balance",
+						"acc03"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBalance (acc04)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/balance/acc04",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"balance",
+						"acc04"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 15, 2->3, wait 15+15 sec #1",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"amount\":\"15\",\"waitBeforeMoveSec\":\"15\",\"waitAfterMoveSec\":\"15\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 15, 2->3, wait 15+15 sec #2",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"amount\":\"15\",\"waitBeforeMoveSec\":\"15\",\"waitAfterMoveSec\":\"15\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 15, 2->3, wait 0 sec",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"aount\":\"15\",\"waitSec\":\"10\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "invalid_payment",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"accXXX\",\"amount\":\"1\",\"waitSec\":\"10\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 5, 2->3, wait 0 sec",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"aount\":\"15\",\"waitSec\":\"10\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 5, 3->2, wait 0 sec",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"aount\":\"15\",\"waitSec\":\"10\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 15, 3->2, wait 0 sec",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc03\",\"payeeAccountId\":\"acc02\",\"amount\":\"15\",\"waitSec\":\"10\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
