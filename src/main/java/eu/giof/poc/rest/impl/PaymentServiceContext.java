@@ -33,6 +33,14 @@ class PaymentServiceContext {
 	@Setter
 	private Account payeeAccount;
 	
+	@Getter
+	@Setter
+	private LockOrder lockOrder;
+	
+	@Getter
+	@Setter
+	private BalanceSlot payeeSlot;
+	
 	private final List<BalanceSlotKey> lockList = new ArrayList<>();
 	private final List<BalanceSlot> slotList = new ArrayList<>();
 	

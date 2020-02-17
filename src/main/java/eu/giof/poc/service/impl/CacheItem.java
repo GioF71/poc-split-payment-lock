@@ -17,6 +17,10 @@ public class CacheItem<V> {
 		return value;
 	}
 
+	public void lock() {
+		lock.lock();
+	}
+
 	public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
 		return lock.tryLock(time, unit);
 	}
@@ -28,4 +32,5 @@ public class CacheItem<V> {
 	public void unlock() {
 		lock.unlock();
 	}
+
 }

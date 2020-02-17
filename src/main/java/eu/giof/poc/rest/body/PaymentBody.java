@@ -1,41 +1,28 @@
 package eu.giof.poc.rest.body;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class PaymentBody {
 
+	@Getter
+	@Setter
 	private String payerAccountId;
+
+	@Getter
+	@Setter
+	
 	private String payeeAccountId;
+	
+	@Getter
+	@Setter
 	private Double amount;
-	private Integer waitSec;
+	
+	@Getter
+	@Setter
+	private Integer waitBeforeMoveSec;
 
-	public String getPayerAccountId() {
-		return payerAccountId;
-	}
-
-	public void setPayerAccountId(String payerAccountId) {
-		this.payerAccountId = payerAccountId;
-	}
-
-	public String getPayeeAccountId() {
-		return payeeAccountId;
-	}
-
-	public void setPayeeAccountId(String payeeAccountId) {
-		this.payeeAccountId = payeeAccountId;
-	}
-
-	public Double getAmount() {
-		return amount;
-	}
-
-	public Integer getWaitSec() {
-		return waitSec;
-	}
-
-	public void setWaitSec(Integer waitSec) {
-		this.waitSec = waitSec;
-	}
-
-	public void setAmount(Double amount) {
-		this.amount = amount;
-	}
+	@Getter
+	@Setter
+	private Integer waitAfterMoveSec;
 }

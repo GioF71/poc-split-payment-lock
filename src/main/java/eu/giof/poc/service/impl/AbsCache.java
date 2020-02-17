@@ -15,6 +15,17 @@ public class AbsCache<K, V> implements CacheInterface<K, V> {
 	}
 	
 	@Override
+	public boolean lock(K key) {
+		CacheItem<V> item = map.get(key);
+		if (item != null) {
+			item.lock();
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
 	public boolean tryLock(K key) {
 		CacheItem<V> item = map.get(key);
 		if (item != null) {

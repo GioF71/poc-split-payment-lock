@@ -21,4 +21,9 @@ public class ConfigurationImpl implements Configuration {
 	public int getMaxSlotCount() {
 		return 50;
 	}
+
+	@Override
+	public int getOptimisticLockTryCount() {
+		return 2;
+	}
 }
