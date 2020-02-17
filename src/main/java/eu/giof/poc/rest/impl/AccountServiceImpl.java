@@ -1,5 +1,7 @@
 package eu.giof.poc.rest.impl;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +15,7 @@ import eu.giof.poc.rest.dto.AccountDto;
 import eu.giof.poc.rest.dto.AddAccountDto;
 import eu.giof.poc.rest.dto.AddResult;
 import eu.giof.poc.service.CacheManagerWrapper;
+import eu.giof.poc.service.Configuration;
 import eu.giof.poc.service.cache.AccountCache;
 import eu.giof.poc.service.cache.BalanceSlotCache;
 import eu.giof.poc.service.structure.Account;
@@ -27,6 +30,9 @@ public class AccountServiceImpl implements AccountService {
 
 	@Autowired
 	private BalanceSlotCache balanceSlotCache;
+	
+	@Autowired
+	private Configuration configuration;
 	
 	@Override
 	@GetMapping(value = "/account/balance/{accountId}")
@@ -48,6 +54,17 @@ public class AccountServiceImpl implements AccountService {
 	public Integer count() {
 		return cacheManagerWrapper.getAccountCache().size();
 	}
+	
+	private int getSlotCount(AddAccount addAccount) {
+		int slotCount = Optional.ofNullable(addAccount.getSlotCount())
+			.orElse(configuration.getDefaultSlotCount());
+		if (slotCount < configuration.getMinSlotCount()) {
+			slotCount = configuration.getMinSlotCount();
+		} else if (slotCount > configuration.getMaxSlotCount()) {
+			slotCount = configuration.getMaxSlotCount();
+		}
+		return slotCount;
+	}
 
 	@Override
 	@PutMapping(value = "/account/add")
@@ -64,9 +81,10 @@ public class AccountServiceImpl implements AccountService {
 		} else {
 			Account newAccount = new Account(id, name);
 			accountCache.put(id, newAccount);
-			for (int slotIndex = 0; slotIndex < addAccount.getSlotCount(); ++slotIndex) {
+			int slotCount = getSlotCount(addAccount);
+			for (int slotIndex = 0; slotIndex < slotCount; ++slotIndex) {
 				BalanceSlotKey currentSlotKey = BalanceSlotKey.valueOf(id, slotIndex + 1);
-				BalanceSlot currentSlot = new BalanceSlot(addAccount.getBalance() / addAccount.getSlotCount());
+				BalanceSlot currentSlot = new BalanceSlot(addAccount.getBalance() / slotCount);
 				balanceSlotCache.put(currentSlotKey, currentSlot);
 			}
 			return new AddAccountDto(

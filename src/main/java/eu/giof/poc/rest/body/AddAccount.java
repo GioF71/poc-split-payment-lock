@@ -19,5 +19,5 @@ public class AddAccount {
 
 	@Getter
 	@Setter
-	private Integer slotCount = 1;
+	private Integer slotCount = null;
 }
