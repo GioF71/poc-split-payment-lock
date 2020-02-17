@@ -39,7 +39,6 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@GetMapping(value = "/account/balance/{accountId}")
 	public Double getBalance(@PathVariable String accountId) {
-		// TODO Auto-generated method stub
 		Double balance = Double.valueOf(0.0f);
 		Integer currentSlotId = 1;
 		BalanceSlot currentSlot = balanceSlotCache.get(BalanceSlotKey.valueOf(accountId, 1));
@@ -77,7 +76,6 @@ public class AccountServiceImpl implements AccountService {
 		return Optional.ofNullable(addAccount.getBalance())
 			.orElse(Double.valueOf(0.0f));
 	}
-
 	
 	private int getSlotCount(AddAccount addAccount) {
 		int slotCount = Optional.ofNullable(addAccount.getSlotCount())
