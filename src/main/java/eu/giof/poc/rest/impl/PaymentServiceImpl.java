@@ -106,9 +106,13 @@ public class PaymentServiceImpl implements PaymentService {
 			Double lockedAvailableAmount = Double.valueOf(0.0f);
 			lockedAvailableAmount = lockPayerSlots(context);
 			if (lockedAvailableAmount >= paymentBody.getAmount()) {
+				int waitSec = Optional.ofNullable(paymentBody.getWaitSec()).orElse(0);
+				if (waitSec > 0) {
+					threadLog(String.format("Waiting for %d sec", paymentBody.getWaitSec()));
+				}
+				wait(paymentBody);
 				threadLog("Moving funds");
 				moveFunds(context);
-				wait(paymentBody);
 				context.setPaymentStatus(PaymentStatus.OK);
 			} else {
 				context.setPaymentStatus(PaymentStatus.NOT_ENOUGH_FUNDS);
@@ -122,11 +126,13 @@ public class PaymentServiceImpl implements PaymentService {
 	private void moveFunds(PaymentServiceContext context) {
 		// can proceed with payment
 		// first, identify next slot in payee
+		// TODO maybe define method to put a new item an lock it in one operation
+		balanceSlotCache.lock();
 		int lastPayeeSlotId = balanceSlotCache.getLastSlotKey(context.getPayeeAccount().getId());
 		BalanceSlotKey payeeSlotKey = BalanceSlotKey.valueOf(context.getPayeeAccount().getId(), lastPayeeSlotId + 1);
 		BalanceSlot payeeSlot = new BalanceSlot(Double.valueOf(0.0f));
 		balanceSlotCache.put(payeeSlotKey, payeeSlot);
-		// TODO define method to put a new item an lock it in one operation
+		balanceSlotCache.unlock();
 		balanceSlotCache.tryLock(payeeSlotKey);
 		context.addToLockList(payeeSlotKey);
 			Double amountToBeRemoved = context.getPaymentBody().getAmount();

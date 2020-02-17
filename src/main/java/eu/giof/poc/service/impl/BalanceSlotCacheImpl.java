@@ -1,5 +1,8 @@
 package eu.giof.poc.service.impl;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +15,8 @@ import eu.giof.poc.service.structure.BalanceSlotKey;
 public class BalanceSlotCacheImpl 
 	extends AbsCache<BalanceSlotKey, BalanceSlot>
 	implements BalanceSlotCache {
+	
+	private final Lock lock = new ReentrantLock(true);
 
 	@Override
 	public Integer getLastSlotKey(String accountId) {
@@ -27,5 +32,15 @@ public class BalanceSlotCacheImpl
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public void lock() {
+		lock.lock();
+	}
+
+	@Override
+	public void unlock() {
+		lock.unlock();
 	}
 }
