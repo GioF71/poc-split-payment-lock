@@ -16,7 +16,6 @@ import eu.giof.poc.rest.dto.AccountSlotListDto;
 import eu.giof.poc.rest.dto.AddAccountDto;
 import eu.giof.poc.rest.dto.AddResult;
 import eu.giof.poc.rest.dto.BalanceSlotDto;
-import eu.giof.poc.service.CacheManagerWrapper;
 import eu.giof.poc.service.Configuration;
 import eu.giof.poc.service.cache.AccountCache;
 import eu.giof.poc.service.cache.BalanceSlotCache;
@@ -28,11 +27,11 @@ import eu.giof.poc.service.structure.BalanceSlotKey;
 public class AccountServiceImpl implements AccountService {
 
 	@Autowired
-	private CacheManagerWrapper cacheManagerWrapper;
+	private AccountCache accountCache;
 
 	@Autowired
 	private BalanceSlotCache balanceSlotCache;
-	
+		
 	@Autowired
 	private Configuration configuration;
 	
@@ -69,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@GetMapping(value = "/account/count")
 	public Integer count() {
-		return cacheManagerWrapper.getAccountCache().size();
+		return accountCache.size();
 	}
 	
 	private Double getBalance(AddAccount addAccount) {
@@ -93,8 +92,6 @@ public class AccountServiceImpl implements AccountService {
 	public AddAccountDto add(@RequestBody AddAccount addAccount) {
 		String id = addAccount.getId();
 		String name = addAccount.getName();
-		AccountCache accountCache = cacheManagerWrapper.getAccountCache();
-		BalanceSlotCache balanceSlotCache = cacheManagerWrapper.getBalanceSlotCache();
 		Account existing = accountCache.get(id);
 		if (existing != null) {
 			return AddAccountDto.valueOf(
