@@ -122,11 +122,8 @@ public class PaymentServiceImpl implements PaymentService {
 		}
 		return toResultDto(context);
 	}
-
-	private void moveFunds(PaymentServiceContext context) {
-		// can proceed with payment
-		// first, identify next slot in payee
-		// TODO maybe define method to put a new item an lock it in one operation
+	
+	private BalanceSlot getPayeeSlot(PaymentServiceContext context) {
 		balanceSlotCache.lock();
 		int lastPayeeSlotId = balanceSlotCache.getLastSlotKey(context.getPayeeAccount().getId());
 		BalanceSlotKey payeeSlotKey = BalanceSlotKey.valueOf(context.getPayeeAccount().getId(), lastPayeeSlotId + 1);
@@ -135,22 +132,26 @@ public class PaymentServiceImpl implements PaymentService {
 		balanceSlotCache.unlock();
 		balanceSlotCache.tryLock(payeeSlotKey);
 		context.addToLockList(payeeSlotKey);
-			Double amountToBeRemoved = context.getPaymentBody().getAmount();
-			for (BalanceSlot slot : context.getSlotList()) {
-				if (slot.getAvailableBalance() <= amountToBeRemoved) {
-					// totally remove
-					Double slotBalance = slot.getAvailableBalance();
-					slot.setAvailableBalance(Double.valueOf(0.0f));
-					amountToBeRemoved -= slotBalance;
-				} else {
-					// partially remove
-					slot.setAvailableBalance(slot.getAvailableBalance() - amountToBeRemoved);
-					amountToBeRemoved = Double.valueOf(0.0f);
-				}
+		return payeeSlot;
+	}
+
+	private void moveFunds(PaymentServiceContext context) {
+		BalanceSlot payeeSlot = getPayeeSlot(context);
+		Double amountToBeRemoved = context.getPaymentBody().getAmount();
+		for (BalanceSlot slot : context.getSlotList()) {
+			if (slot.getAvailableBalance() <= amountToBeRemoved) {
+				// totally remove
+				Double slotBalance = slot.getAvailableBalance();
+				slot.setAvailableBalance(Double.valueOf(0.0f));
+				amountToBeRemoved -= slotBalance;
+			} else {
+				// partially remove
+				slot.setAvailableBalance(slot.getAvailableBalance() - amountToBeRemoved);
+				amountToBeRemoved = Double.valueOf(0.0f);
 			}
-			// give balance to payee
-			payeeSlot.setAvailableBalance(payeeSlot.getAvailableBalance() + context.getPaymentBody().getAmount());
-		//}
+		}
+		// give balance to the payee
+		payeeSlot.setAvailableBalance(payeeSlot.getAvailableBalance() + context.getPaymentBody().getAmount());
 	}
 
 	private Double lockPayerSlots(PaymentServiceContext context) {
