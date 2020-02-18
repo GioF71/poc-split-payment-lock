@@ -19,6 +19,7 @@ import eu.giof.poc.rest.dto.AccountSlotListDto;
 import eu.giof.poc.rest.dto.AddAccountDto;
 import eu.giof.poc.rest.dto.AddResult;
 import eu.giof.poc.rest.dto.BalanceSlotDto;
+import eu.giof.poc.rest.dto.GetAccountSlotListDto;
 import eu.giof.poc.service.Configuration;
 import eu.giof.poc.service.cache.AccountCache;
 import eu.giof.poc.service.cache.BalanceSlotCache;
@@ -55,18 +56,25 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	@GetMapping(value = "/account/slotlist/{accountId}")
-	public AccountSlotListDto getSlotList(@PathVariable String accountId) {
-		AccountSlotListDto dto = AccountSlotListDto.create(accountId);
-		Integer currentSlotId = 1;
-		BalanceSlot currentSlot = balanceSlotCache.get(BalanceSlotKey.valueOf(accountId, 1));
-		while (currentSlotId < Integer.MAX_VALUE && currentSlot != null) {
-			currentSlot = balanceSlotCache.get(BalanceSlotKey.valueOf(accountId, currentSlotId));
-			if (currentSlot != null) {
-				dto.add(BalanceSlotDto.valueOf(currentSlotId, currentSlot.getAvailableBalance()));
+	public GetAccountSlotListDto getSlotList(@PathVariable String accountId) {
+		GetAccountSlotListDto dto = null;
+		// is lock needed?
+		boolean exists = accountCache.containsKey(accountId);
+		if (exists) {
+			AccountSlotListDto accountSlotListDto = AccountSlotListDto.create(accountId);
+			Integer currentSlotId = 1;
+			BalanceSlot currentSlot = balanceSlotCache.get(BalanceSlotKey.valueOf(accountId, 1));
+			while (currentSlotId < Integer.MAX_VALUE && currentSlot != null) {
+				currentSlot = balanceSlotCache.get(BalanceSlotKey.valueOf(accountId, currentSlotId));
+				if (currentSlot != null) {
+					accountSlotListDto.add(BalanceSlotDto.valueOf(currentSlotId, currentSlot.getAvailableBalance()));
+				}
+				++currentSlotId;
 			}
-			++currentSlotId;
-		}	
-		// TODO show account not found when this is the case
+			dto = GetAccountSlotListDto.found(accountId, accountSlotListDto);
+		} else {
+			dto = GetAccountSlotListDto.notFound(accountId);
+		}
 		return dto;
 	}
 
@@ -124,11 +132,12 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	@PostMapping(value = "/account/rebalance/{accountId}")
-	public AccountSlotListDto rebalance(@PathVariable String accountId) {
+	public GetAccountSlotListDto rebalance(@PathVariable String accountId) {
+		GetAccountSlotListDto dto = null;
 		accountCache.lock();
 		Account existing = accountCache.get(accountId);
-		AccountSlotListDto dto = AccountSlotListDto.create(accountId);
 		if (existing != null) {
+			AccountSlotListDto accountSlotListDto = AccountSlotListDto.create(accountId);
 			// do rebalance
 			Double totalBalance = Double.valueOf(0.0f);
 			List<BalanceSlot> slotList = new ArrayList<>();
@@ -149,10 +158,11 @@ public class AccountServiceImpl implements AccountService {
 			for (int i = 0; i < slotList.size(); ++i) {
 				slotList.get(i).setAvailableBalance(totalBalance / slotList.size());
 				balanceSlotCache.unlock(slotKeyList.get(i));
-				dto.add(BalanceSlotDto.valueOf(i + 1, totalBalance / slotList.size()));
+				accountSlotListDto.add(BalanceSlotDto.valueOf(i + 1, totalBalance / slotList.size()));
 			}
+			dto = GetAccountSlotListDto.found(accountId, accountSlotListDto);
 		} else {
-			// TODO show in DTO that no account was found
+			dto = GetAccountSlotListDto.notFound(accountId);
 		}
 		accountCache.unlock();
 		return dto;
