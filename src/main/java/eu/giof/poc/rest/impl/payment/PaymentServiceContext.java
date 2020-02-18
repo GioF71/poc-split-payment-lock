@@ -48,19 +48,19 @@ class PaymentServiceContext {
 		this.paymentBody = paymentBody;
 	}
 	
-	List<BalanceSlotKey> getLockList() {
+	List<BalanceSlotKey> getBalanceSlotKeyList() {
 		return Collections.unmodifiableList(lockList);
 	}
 	
-	void addToLockList(BalanceSlotKey balanceSlotKey) {
+	void addBalanceSlotKey(BalanceSlotKey balanceSlotKey) {
 		lockList.add(balanceSlotKey);
 	}
 	
-	List<BalanceSlot> getSlotList() {
+	List<BalanceSlot> getBalanceSlotList() {
 		return Collections.unmodifiableList(slotList);
 	}
 	
-	void addToSlotList(BalanceSlot balanceSlot) {
+	void addBalanceSlot(BalanceSlot balanceSlot) {
 		slotList.add(balanceSlot);
 	}
 }

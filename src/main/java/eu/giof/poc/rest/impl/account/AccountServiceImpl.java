@@ -122,7 +122,7 @@ public class AccountServiceImpl implements AccountService {
 				AddResult.ALREADY_EXISTS, 
 				AccountDto.valueOf(existing.getId(), existing.getName()));
 		} else {
-			Account newAccount = new Account(accountId, name);
+			Account newAccount = Account.valueOf(accountId, name);
 			accountCache.put(accountId, newAccount);
 			int slotCount = getSlotCount(addAccount);
 			Double accountBalance = getBalance(addAccount);

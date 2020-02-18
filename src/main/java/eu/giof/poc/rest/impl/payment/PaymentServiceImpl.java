@@ -46,8 +46,12 @@ public class PaymentServiceImpl implements PaymentService {
 	
 	@PostConstruct
 	private void postConstruct() {
-		newList(LockOrder.PAYEE_FIRST).addAll(Arrays.asList(PaymentServiceImpl::doLockPayeeSlots, PaymentServiceImpl::doLockPayerSlots));
-		newList(LockOrder.PAYER_FIRST).addAll(Arrays.asList(PaymentServiceImpl::doLockPayerSlots, PaymentServiceImpl::doLockPayeeSlots));
+		newList(LockOrder.PAYEE_FIRST).addAll(Arrays.asList(
+			PaymentServiceImpl::doPayeeLock, 
+			PaymentServiceImpl::doPayerLock));
+		newList(LockOrder.PAYER_FIRST).addAll(Arrays.asList(
+			PaymentServiceImpl::doPayerLock, 
+			PaymentServiceImpl::doPayeeLock));
 		validationStepArray.addAll(createValidationStepList());
 	}
 	
@@ -61,7 +65,7 @@ public class PaymentServiceImpl implements PaymentService {
 		return Arrays.asList(
 			ValidationStep.create(notEmpty(PaymentBody::getPayerAccountId),	() -> PaymentStatus.UNSPECIFIED_PAYER_ACCOUNT),
 			ValidationStep.create(notEmpty(PaymentBody::getPayeeAccountId),	() -> PaymentStatus.UNSPECIFIED_PAYEE_ACCOUNT),
-			ValidationStep.create(differentAccounts(),	() -> PaymentStatus.SAME_ACCOUNT),
+			ValidationStep.create(differentAccounts(), () -> PaymentStatus.SAME_ACCOUNT),
 			ValidationStep.create(validAmount(), () -> PaymentStatus.INVALID_AMOUNT),
 			ValidationStep.create(loadAccount(PaymentBody::getPayerAccountId, PaymentServiceContext::setPayerAccount), () -> PaymentStatus.PAYER_ACCOUNT_NOT_FOUND),
 			ValidationStep.create(loadAccount(PaymentBody::getPayeeAccountId, PaymentServiceContext::setPayeeAccount), () -> PaymentStatus.PAYEE_ACCOUNT_NOT_FOUND));
@@ -161,13 +165,13 @@ public class PaymentServiceImpl implements PaymentService {
 		return success;
 	}
 	
-	private boolean doLockPayerSlots(PaymentServiceContext context) {
+	private boolean doPayerLock(PaymentServiceContext context) {
 		int i = 0;
 		boolean success = false;
 		LockActorSlotResult lockActorSlotResult = null;
 		// Optimistic lock first
 		while (!success && i <= configuration.getOptimisticLockTryCount()) {
-			LockActorSlotResult currentLockActorSlotResult = lockPayerSlots(
+			LockActorSlotResult currentLockActorSlotResult = doOptimisticPayerLock(
 				context.getPayerAccount().getId(), 
 				context.getPaymentBody().getAmount(),
 				(k) -> balanceSlotCache.tryLock(k), 
@@ -176,7 +180,7 @@ public class PaymentServiceImpl implements PaymentService {
 					return true;
 				});
 			if (!currentLockActorSlotResult.isSuccess()) {
-				// unlock
+				// unlock locked slots when optimistic lock was not successful
 				for (ActorSlot actorSlot : currentLockActorSlotResult.getActorSlotList()) {
 					balanceSlotCache.unlock(actorSlot.getBalanceSlotKey());
 				}
@@ -190,14 +194,14 @@ public class PaymentServiceImpl implements PaymentService {
 			storeInContext(context, lockActorSlotResult);
 			lockActorSlotResult.getActorSlotList().forEach(x -> logLockBalanceSlotKey(x.getBalanceSlotKey()));
 		} else {
-			success = executePessimisticPayerSlotsLock(context, success);
+			success = doPessimisticPayerLock(context, success);
 		}
 		return success;
 	}
 
-	private boolean executePessimisticPayerSlotsLock(PaymentServiceContext context, boolean success) {
+	private boolean doPessimisticPayerLock(PaymentServiceContext context, boolean success) {
 		// pessimistic lock, might take some time to lock all
-		LockActorSlotResult pessimisticLockActorSlotResult = lockPayerSlots(
+		LockActorSlotResult pessimisticLockActorSlotResult = doOptimisticPayerLock(
 			context.getPayerAccount().getId(), 
 			context.getPaymentBody().getAmount(),
 			(k) -> balanceSlotCache.lock(k), 
@@ -222,12 +226,12 @@ public class PaymentServiceImpl implements PaymentService {
 			LockActorSlotResult lockActorSlotResult) {
 		// store keys and slots in context
 		for (ActorSlot actorSlot : lockActorSlotResult.getActorSlotList()) {
-			context.addToLockList(actorSlot.getBalanceSlotKey());
-			context.addToSlotList(actorSlot.getBalanceSlot());
+			context.addBalanceSlotKey(actorSlot.getBalanceSlotKey());
+			context.addBalanceSlot(actorSlot.getBalanceSlot());
 		}
 	}
 
-	private boolean doLockPayeeSlots(PaymentServiceContext context) {
+	private boolean doPayeeLock(PaymentServiceContext context) {
 		BalanceSlot payeeSlot = null;
 		while (payeeSlot == null) {
 			int slotId = 1;
@@ -245,7 +249,7 @@ public class PaymentServiceImpl implements PaymentService {
 						payeeSlot = currentSlot;
 						context.setPayeeSlot(currentSlot);
 						unlockedFound = true;
-						context.addToLockList(currentKey);
+						context.addBalanceSlotKey(currentKey);
 					} else {
 						++slotId;
 					}
@@ -277,7 +281,7 @@ public class PaymentServiceImpl implements PaymentService {
 				// failure in context
 			}
 			// anyway, do all the slot unlock...
-			context.getLockList().forEach(x -> balanceSlotCache.unlock(x));
+			context.getBalanceSlotKeyList().forEach(x -> balanceSlotCache.unlock(x));
 		}
 		return toResultDto(context);
 	}
@@ -285,7 +289,7 @@ public class PaymentServiceImpl implements PaymentService {
 	private void moveFunds(PaymentServiceContext context) {
 		BalanceSlot payeeSlot = context.getPayeeSlot();
 		Double amountToBeRemoved = context.getPaymentBody().getAmount();
-		for (BalanceSlot slot : context.getSlotList()) {
+		for (BalanceSlot slot : context.getBalanceSlotList()) {
 			if (slot.getAvailableBalance() <= amountToBeRemoved) {
 				// totally remove
 				Double slotBalance = slot.getAvailableBalance();
@@ -301,7 +305,7 @@ public class PaymentServiceImpl implements PaymentService {
 		payeeSlot.setAvailableBalance(payeeSlot.getAvailableBalance() + context.getPaymentBody().getAmount());
 	}
 	
-	private LockActorSlotResult lockPayerSlots(
+	private LockActorSlotResult doOptimisticPayerLock(
 			String payerAccountId, 
 			Double amountToBeLocked,
 			Function<BalanceSlotKey, Boolean> lockFunction,

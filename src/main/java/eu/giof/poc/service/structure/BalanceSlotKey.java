@@ -2,28 +2,26 @@ package eu.giof.poc.service.structure;
 
 import com.google.common.collect.ComparisonChain;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class BalanceSlotKey implements Comparable<BalanceSlotKey> {
 
+	@NonNull
+	@Getter
 	private final String accountId;
+
+	@NonNull
+	@Getter
 	private final Integer slotId;
 	
 	public static BalanceSlotKey valueOf(String accountId, Integer slotId) {
 		return new BalanceSlotKey(accountId, slotId);
 	}
 	
-	private BalanceSlotKey(String accountId, Integer slotId) {
-		this.accountId = accountId;
-		this.slotId = slotId;
-	}
-
-	public String getAccountId() {
-		return accountId;
-	}
-
-	public Integer getSlotId() {
-		return slotId;
-	}
-
 	@Override
 	public int compareTo(BalanceSlotKey o) {
 		return ComparisonChain.start()

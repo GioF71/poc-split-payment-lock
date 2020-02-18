@@ -4,8 +4,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class LockActorSlotResult {
 	
 	@Getter
@@ -15,11 +18,6 @@ class LockActorSlotResult {
 	
 	static LockActorSlotResult valueOf(boolean success, List<ActorSlot> selectedList) {
 		return new LockActorSlotResult(success, selectedList);
-	}
-	
-	private LockActorSlotResult(boolean success, List<ActorSlot> actorSlotList) {
-		this.success = success;
-		this.actorSlotList = actorSlotList;
 	}
 	
 	List<ActorSlot> getActorSlotList() {
