@@ -1,4 +1,4 @@
-package eu.giof.poc.rest.impl;
+package eu.giof.poc.rest.impl.payment;
 
 import eu.giof.poc.service.structure.BalanceSlot;
 import eu.giof.poc.service.structure.BalanceSlotKey;

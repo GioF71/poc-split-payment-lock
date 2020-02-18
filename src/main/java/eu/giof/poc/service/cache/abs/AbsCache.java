@@ -1,4 +1,4 @@
-package eu.giof.poc.service.impl;
+package eu.giof.poc.service.cache.abs;
 
 import java.util.HashMap;
 import java.util.Map;

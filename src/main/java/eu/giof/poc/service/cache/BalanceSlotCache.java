@@ -5,5 +5,4 @@ import eu.giof.poc.service.structure.BalanceSlotKey;
 
 public interface BalanceSlotCache 
 	extends CacheInterface<BalanceSlotKey, BalanceSlot> {
-	Integer getLastSlotKey(String accountId);
 }

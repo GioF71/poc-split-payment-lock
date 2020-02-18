@@ -1,4 +1,4 @@
-package eu.giof.poc.rest.impl;
+package eu.giof.poc.rest.impl.payment;
 
 import java.util.ArrayList;
 import java.util.Collections;

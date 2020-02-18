@@ -1,7 +1,6 @@
 package eu.giof.poc.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import eu.giof.poc.service.CacheManagerWrapper;
@@ -9,7 +8,6 @@ import eu.giof.poc.service.cache.AccountCache;
 import eu.giof.poc.service.cache.BalanceSlotCache;
 
 @Component
-@Scope(value = "singleton")
 public class CacheManagerWrapperImpl implements CacheManagerWrapper {
 
 	@Autowired
