@@ -1,10 +1,13 @@
 package eu.giof.poc.rest.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -90,26 +93,65 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@PutMapping(value = "/account/add")
 	public AddAccountDto add(@RequestBody AddAccount addAccount) {
-		String id = addAccount.getId();
+		String accountId = addAccount.getId();
 		String name = addAccount.getName();
-		Account existing = accountCache.get(id);
+		accountCache.lock();
+		Account existing = accountCache.get(accountId);
 		if (existing != null) {
+			accountCache.unlock();
 			return AddAccountDto.valueOf(
 				AddResult.ALREADY_EXISTS, 
 				AccountDto.valueOf(existing.getId(), existing.getName()));
 		} else {
-			Account newAccount = new Account(id, name);
-			accountCache.put(id, newAccount);
+			Account newAccount = new Account(accountId, name);
+			accountCache.put(accountId, newAccount);
 			int slotCount = getSlotCount(addAccount);
 			Double accountBalance = getBalance(addAccount);
 			for (int slotIndex = 0; slotIndex < slotCount; ++slotIndex) {
-				BalanceSlotKey currentSlotKey = BalanceSlotKey.valueOf(id, slotIndex + 1);
+				BalanceSlotKey currentSlotKey = BalanceSlotKey.valueOf(accountId, slotIndex + 1);
 				BalanceSlot currentSlot = BalanceSlot.valueOf(accountBalance / slotCount);
 				balanceSlotCache.put(currentSlotKey, currentSlot);
 			}
+			accountCache.unlock();
 			return AddAccountDto.valueOf(
 				AddResult.ADD_OK, 
-				AccountDto.valueOf(id, name));
+				AccountDto.valueOf(accountId, name));
 		}
+	}
+
+	@Override
+	@PostMapping(value = "/account/rebalance/{accountId}")
+	public AccountSlotListDto rebalance(@PathVariable String accountId) {
+		accountCache.lock();
+		Account existing = accountCache.get(accountId);
+		AccountSlotListDto dto = AccountSlotListDto.create(accountId);
+		if (existing != null) {
+			// do rebalance
+			Double totalBalance = Double.valueOf(0.0f);
+			List<BalanceSlot> slotList = new ArrayList<>();
+			List<BalanceSlotKey> slotKeyList = new ArrayList<>();
+			int slotId = 1;
+			BalanceSlot slot = null;
+			do {
+				BalanceSlotKey key = BalanceSlotKey.valueOf(accountId, slotId);
+				slot = balanceSlotCache.get(key);
+				if (slot != null) {
+					slotList.add(slot);
+					slotKeyList.add(key);
+					balanceSlotCache.lock(key);
+					totalBalance += Optional.ofNullable(slot.getAvailableBalance()).orElse(Double.valueOf(0.0f));
+				}
+				++slotId;
+			} while (slot != null && slotId < Integer.MAX_VALUE);
+			for (int i = 0; i < slotList.size(); ++i) {
+				slotList.get(i).setAvailableBalance(totalBalance / slotList.size());
+				balanceSlotCache.unlock(slotKeyList.get(i));
+				dto.add(BalanceSlotDto.valueOf(i + 1, totalBalance / slotList.size()));
+			}
+		} else {
+			// TODO show in DTO that no account was found
+		}
+		accountCache.unlock();
+		return dto;
 	}
 }

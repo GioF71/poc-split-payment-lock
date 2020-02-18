@@ -3,6 +3,8 @@ package eu.giof.poc.service.impl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import eu.giof.poc.service.cache.CacheInterface;
 
@@ -10,10 +12,22 @@ public class AbsCache<K, V> implements CacheInterface<K, V> {
 
 	private Map<K, CacheItem<V>> map = new HashMap<>();
 
+	private final Lock lock = new ReentrantLock(true);
+
 	protected Map<K, CacheItem<V>> getMap() {
 		return map;
 	}
 	
+	@Override
+	public void lock() {
+		lock.lock();
+	}
+
+	@Override
+	public void unlock() {
+		lock.unlock();
+	}
+
 	@Override
 	public boolean lock(K key) {
 		CacheItem<V> item = map.get(key);

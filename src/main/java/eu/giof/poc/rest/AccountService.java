@@ -9,4 +9,5 @@ public interface AccountService {
 	AddAccountDto add(AddAccount addAccount);
 	Double getBalance(String accountId);
 	AccountSlotListDto getSlotList(String accountId);
+	AccountSlotListDto rebalance(String accountId);
 }
