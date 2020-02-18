@@ -146,7 +146,7 @@ public class AccountServiceImpl implements AccountService {
 		Account existing = accountCache.get(accountId);
 		if (existing != null) {
 			AccountSlotListDto accountSlotListDto = AccountSlotListDto.create(accountId);
-			// do rebalance
+			// find and lock slots
 			Double totalBalance = Double.valueOf(0.0f);
 			List<BalanceSlot> slotList = new ArrayList<>();
 			List<BalanceSlotKey> slotKeyList = new ArrayList<>();
@@ -163,6 +163,7 @@ public class AccountServiceImpl implements AccountService {
 				}
 				++slotId;
 			} while (slot != null && slotId < Integer.MAX_VALUE);
+			// rebalancing and unlock
 			for (int i = 0; i < slotList.size(); ++i) {
 				slotList.get(i).setAvailableBalance(totalBalance / slotList.size());
 				balanceSlotCache.unlock(slotKeyList.get(i));
