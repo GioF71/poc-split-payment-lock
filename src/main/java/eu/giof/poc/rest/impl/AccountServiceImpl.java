@@ -49,6 +49,7 @@ public class AccountServiceImpl implements AccountService {
 			++currentSlotId;
 			currentSlot = balanceSlotCache.get(BalanceSlotKey.valueOf(accountId, currentSlotId));
 		}		
+		// TODO show account not found when this is the case
 		return balance;
 	}
 
@@ -64,13 +65,15 @@ public class AccountServiceImpl implements AccountService {
 				dto.add(BalanceSlotDto.valueOf(currentSlotId, currentSlot.getAvailableBalance()));
 			}
 			++currentSlotId;
-		}		
+		}	
+		// TODO show account not found when this is the case
 		return dto;
 	}
 
 	@Override
 	@GetMapping(value = "/account/count")
 	public Integer count() {
+		// no need to lock
 		return accountCache.size();
 	}
 	
