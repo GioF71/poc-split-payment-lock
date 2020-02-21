@@ -97,8 +97,11 @@
 		},
 		{
 			"name": "count",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
-				"method": "PUT",
+				"method": "GET",
 				"header": [
 					{
 						"key": "Content-Type",
@@ -108,10 +111,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"id\":\"acc01\",\"name\":\"name-acc-01\"}"
+					"raw": ""
 				},
 				"url": {
-					"raw": "http://localhost:8080/account/add",
+					"raw": "http://localhost:8080/account/count",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -119,7 +122,7 @@
 					"port": "8080",
 					"path": [
 						"account",
-						"add"
+						"count"
 					]
 				}
 			},
@@ -127,6 +130,40 @@
 		},
 		{
 			"name": "getBalance (acc02)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/slotlist/acc02",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"slotlist",
+						"acc02"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBalance (no-slot) (acc02)",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -160,7 +197,72 @@
 			"response": []
 		},
 		{
+			"name": "rebalance (acc02)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/rebalance/acc02",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"rebalance",
+						"acc02"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "getBalance (acc03)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/slotlist/acc03",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"slotlist",
+						"acc03"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBalance (no-slot) (acc03)",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -194,6 +296,37 @@
 			"response": []
 		},
 		{
+			"name": "rebalance (acc03)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/rebalance/acc03",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"rebalance",
+						"acc03"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "getBalance (acc04)",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -212,7 +345,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://localhost:8080/account/balance/acc04",
+					"raw": "http://localhost:8080/account/slotlist/acc04",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -220,7 +353,7 @@
 					"port": "8080",
 					"path": [
 						"account",
-						"balance",
+						"slotlist",
 						"acc04"
 					]
 				}
@@ -300,7 +433,37 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"aount\":\"15\",\"waitSec\":\"10\"}"
+					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"amount\":\"15\",\"waitSec\":\"0\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 15, 2->3, wait 0 sec #2",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"amount\":\"15\",\"waitSec\":\"10\"}"
 				},
 				"url": {
 					"raw": "http://localhost:8080/payment/pay",
@@ -330,7 +493,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"accXXX\",\"amount\":\"1\",\"waitSec\":\"10\"}"
+					"raw": "{\"payerAccountId\":\"acc03\",\"payeeAccountId\":\"acc02\",\"amount\":\"1\",\"waitSec\":\"10\"}"
 				},
 				"url": {
 					"raw": "http://localhost:8080/payment/pay",
@@ -360,7 +523,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"aount\":\"15\",\"waitSec\":\"10\"}"
+					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"amount\":\"5\",\"waitSec\":\"0\"}"
 				},
 				"url": {
 					"raw": "http://localhost:8080/payment/pay",
@@ -390,7 +553,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"aount\":\"15\",\"waitSec\":\"10\"}"
+					"raw": "{\"payerAccountId\":\"acc03\",\"payeeAccountId\":\"acc02\",\"amount\":\"5\",\"waitSec\":\"0\"}"
 				},
 				"url": {
 					"raw": "http://localhost:8080/payment/pay",
@@ -421,6 +584,186 @@
 				"body": {
 					"mode": "raw",
 					"raw": "{\"payerAccountId\":\"acc03\",\"payeeAccountId\":\"acc02\",\"amount\":\"15\",\"waitSec\":\"10\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "account balance (acc02)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"id\":\"acc02\",\"name\":\"name-acc-02\",\"balance\":\"100\",\"slotCount\":\"10\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "account balance (acc03)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"id\":\"acc02\",\"name\":\"name-acc-02\",\"balance\":\"100\",\"slotCount\":\"10\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/account/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"account",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 15, 3->2, wait 0 sec",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc03\",\"payeeAccountId\":\"acc02\",\"amount\":\"15\",\"waitSec\":\"0\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 5, 3->2, wait 0 sec",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc03\",\"payeeAccountId\":\"acc02\",\"amount\":\"5\",\"waitSec\":\"0\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 15, 3->2, wait 0 sec",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc03\",\"payeeAccountId\":\"acc02\",\"amount\":\"15\",\"waitSec\":\"0\"}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/payment/pay",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"payment",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "pay 5, 2->3, wait 0 sec",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"payerAccountId\":\"acc02\",\"payeeAccountId\":\"acc03\",\"amount\":\"5\",\"waitSec\":\"0\"}"
 				},
 				"url": {
 					"raw": "http://localhost:8080/payment/pay",
