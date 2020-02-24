@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -110,7 +109,7 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	@PutMapping(value = "/account/add")
+	@PostMapping(value = "/account/add")
 	public AddAccountDto add(@RequestBody AddAccount addAccount) {
 		String accountId = addAccount.getId();
 		String name = addAccount.getName();
@@ -118,9 +117,7 @@ public class AccountServiceImpl implements AccountService {
 		Account existing = accountCache.get(accountId);
 		if (existing != null) {
 			accountCache.unlock();
-			return AddAccountDto.valueOf(
-				AddResult.ALREADY_EXISTS, 
-				AccountDto.valueOf(existing.getId(), existing.getName()));
+			return AddAccountDto.alreadyExists();
 		} else {
 			Account newAccount = Account.valueOf(accountId, name);
 			accountCache.put(accountId, newAccount);
@@ -132,9 +129,10 @@ public class AccountServiceImpl implements AccountService {
 				balanceSlotCache.put(currentSlotKey, currentSlot);
 			}
 			accountCache.unlock();
+			AccountDto accountDto = AccountDto.valueOf(accountId, name, addAccount.getBalance(), addAccount.getSlotCount());
 			return AddAccountDto.valueOf(
 				AddResult.ADD_OK, 
-				AccountDto.valueOf(accountId, name));
+				accountDto);
 		}
 	}
 
