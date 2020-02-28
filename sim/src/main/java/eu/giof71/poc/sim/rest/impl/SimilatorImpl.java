@@ -19,6 +19,7 @@ import eu.giof71.poc.sim.rest.dto.PrepareTestBedResult;
 import eu.giof71.poc.sim.rest.dto.Result;
 import eu.giof71.poc.sim.rest.dto.TestBedAccount;
 import eu.giof71.poc.sim.service.PaymentInstruction;
+import eu.giof71.poc.sim.service.ProcessingQueue;
 import eu.giof71.poc.sim.service.SimulationData;
 
 @RestController
@@ -26,6 +27,9 @@ public class SimilatorImpl implements Simulator {
 	
 	@Autowired
 	private SimulationData simulationData;
+	
+	@Autowired
+	private ProcessingQueue processingQueue;
 
 	@Override
 	@PostMapping(value = "/simulator/prepare")
@@ -68,13 +72,13 @@ public class SimilatorImpl implements Simulator {
 		paymentInstruction.setAmount(request.getAmount());
 		paymentInstruction.setPayee(request.getPayee());
 		paymentInstruction.setPayer(request.getPayer());
-		simulationData.addPaymentInstruction(paymentInstruction);
+		processingQueue.push(paymentInstruction);
 		return paymentInstruction;
 	}
 
 	@Override
 	@GetMapping(value = "/simulator/pendingPaymentRequestCount")
 	public int pendingPaymentRequestCount() {
-		return simulationData.getPendingPaymentInstructionCount();
+		return processingQueue.depth();
 	}
 }

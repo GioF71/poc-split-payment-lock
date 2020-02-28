@@ -6,15 +6,16 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import eu.giof71.poc.sim.service.PaymentInstruction;
 import eu.giof71.poc.sim.service.ProcessingQueue;
 
 @Component
 public class ProcessingQueueImpl implements ProcessingQueue {
 	
-	private final List<Object> queue = new LinkedList<>();
+	private final List<PaymentInstruction> queue = new LinkedList<>();
 
 	@Override
-	public Object pop() {
+	public PaymentInstruction pop() {
 		synchronized(queue) {
 			return Optional.of(queue)
 				.filter(q -> !q.isEmpty())
@@ -24,10 +25,16 @@ public class ProcessingQueueImpl implements ProcessingQueue {
 	}
 
 	@Override
-	public void push(Object o) {
+	public void push(PaymentInstruction o) {
 		synchronized(queue) {
 			queue.add(o);
 		}
 	}
 
+	@Override
+	public int depth() {
+		synchronized(queue) {
+			return queue.size();
+		}
+	}
 }

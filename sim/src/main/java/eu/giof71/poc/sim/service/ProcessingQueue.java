@@ -1,6 +1,7 @@
 package eu.giof71.poc.sim.service;
 
 public interface ProcessingQueue {
-	Object pop();
-	void push(Object o);
+	int depth();
+	PaymentInstruction pop();
+	void push(PaymentInstruction o);
 }
