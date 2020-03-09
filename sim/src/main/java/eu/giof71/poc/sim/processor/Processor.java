@@ -35,7 +35,6 @@ public class Processor {
 
 				@Override
 				public void run() {
-					// TODO Auto-generated method stub
 					while (true) {
 						PaymentInstruction instruction;
 						try {
@@ -54,11 +53,5 @@ public class Processor {
 			runnableList.add(currentThread);
 		}
 		// TODO stop?
-//		System.out.println("Processing ...");
-//		PaymentInstruction instruction = null;
-//		while ((instruction = processingQueue.pop()) != null) {
-//			System.out.println(String.format("Processing one %s", PaymentInstruction.class.getSimpleName()));
-//			// todo process...
-//		}
 	}
 }
